@@ -50,7 +50,7 @@ class Parser(object):
 def main():
   parser = Parser()
 
-  with open('./syslog') as syslogFile:
+  with open('/var/log/syslog') as syslogFile:
     for line in syslogFile:
       fields = parser.parse(line)
       if fields != None:
@@ -60,15 +60,19 @@ def main():
 
 if __name__ == "__main__":
   content_dic = main()
-  #print content_dic
-  content = content_dic['timestamp'] + " " + content_dic['hostname'] + " " + content_dic['appname'] + " " + content_dic['message']
-  #print content
+  if content_dic != None:
+    #print content_dic
+    content = content_dic['timestamp'] + " " + content_dic['hostname'] + " " + content_dic['appname'] + " " + content_dic['message']
+    #print content
 
-  payload_dic = {
-      "text":content,
-      "username":'RAID Messages',
-      "icon_emoji":':warning:',
-      "channel":channel_name,
-      }
+    payload_dic = {
+        "text":content,
+        "username":'RAID Messages',
+        "icon_emoji":':warning:',
+        "channel":channel_name,
+        }
 
-  r = requests.post(url, data=json.dumps(payload_dic))
+    r = requests.post(url, data=json.dumps(payload_dic))
+  else:
+    exit()
+
