@@ -1,6 +1,12 @@
 from pyparsing import Word, alphas, Suppress, Combine, nums, string, Optional, Regex
 from time import strftime
 import datetime
+import json
+import requests
+import os
+
+url = os.environ["WEBHOOK_URL"]
+channel_name = '#syslog-mon'
 
 class Parser(object):
   def __init__(self):
@@ -28,7 +34,7 @@ class Parser(object):
   def parse(self, line):
     parsed = self.__pattern.parseString(line)
     payload              = {}
-    delta1 =  datetime.datetime.now() - datetime.timedelta(minutes=30)
+    delta1 =  datetime.datetime.now() - datetime.timedelta(minutes=31)
     thisyear = datetime.datetime.now().strftime('%Y')
     loggedtime_str = thisyear + " " + parsed[0] + " " + parsed[1] + " " +  parsed[2]
     loggedtime = datetime.datetime.strptime(loggedtime_str, '%Y %b %d %H:%M:%S')
@@ -48,8 +54,21 @@ def main():
     for line in syslogFile:
       fields = parser.parse(line)
       if fields != None:
-        if fields['appname'] == 'kernel' and 'disabling' in fields['message']:
-          print "parsed:", fields
+        if fields['appname'] == 'kernel' and 'md/raid' in fields['message']:
+          #print "parsed:", fields
+          return fields
 
 if __name__ == "__main__":
-  main()
+  content_dic = main()
+  #print content_dic
+  content = content_dic['timestamp'] + " " + content_dic['hostname'] + " " + content_dic['appname'] + " " + content_dic['message']
+  #print content
+
+  payload_dic = {
+      "text":content,
+      "username":'RAID Messages',
+      "icon_emoji":':warning:',
+      "channel":channel_name,
+      }
+
+  r = requests.post(url, data=json.dumps(payload_dic))
