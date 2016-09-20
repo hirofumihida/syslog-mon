@@ -58,7 +58,7 @@ def main():
           #print "parsed:", fields
           fields_list.append(fields)
           #return fields
-    print fields_list
+    #print fields_list
     return fields_list
 
 if __name__ == "__main__":
